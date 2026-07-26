@@ -1008,6 +1008,8 @@ elif st.session_state.page == "home":
                     )
 
 
+                    import os
+
                     new_record = pd.DataFrame([{
                         'timestamp': timestamp,
                         'age': age,
@@ -1021,13 +1023,8 @@ elif st.session_state.page == "home":
                         'cholesterol': cholesterol,
                         'heart_rate': heart_rate,
                         'risk_level': int(prediction),
-                        'risk_percentage': round(
-                            float(probability * 100), 1
-                        )
+                        'risk_percentage': round(float(probability * 100), 1)
                     }])
-
-
-                    import os
 
                     file_exists = os.path.exists("history.csv")
 
@@ -1037,6 +1034,7 @@ elif st.session_state.page == "home":
                         header=not file_exists,
                         index=False
                     )
+
                     history_check = pd.read_csv("history.csv")
                     st.write(history_check)
                     st.write(history_check.columns.tolist())
