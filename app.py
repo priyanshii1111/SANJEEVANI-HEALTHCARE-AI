@@ -1037,6 +1037,10 @@ elif st.session_state.page == "home":
                         header=not file_exists,
                         index=False
                     )
+                    history_check = pd.read_csv("history.csv")
+                    st.write(history_check)
+                    st.write(history_check.columns.tolist())
+                    st.stop()
 
 
                     import time
