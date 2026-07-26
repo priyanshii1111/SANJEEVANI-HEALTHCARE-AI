@@ -1,0 +1,5 @@
+myvenv/
+__pycache__/
+.env
+*.pyc
+history.csv
