@@ -1036,14 +1036,6 @@ elif st.session_state.page == "home":
                     )
 
                     conn.close()
-                    file_exists = os.path.exists("history.csv")
-
-                    new_record.to_csv(
-                        "history.csv",
-                        mode="a",
-                        header=not file_exists,
-                        index=False
-                    )
 
                     import time
 
@@ -1336,7 +1328,14 @@ elif st.session_state.page == "weekly":
 
         else:
 
-            history_df = pd.read_csv("history.csv")
+            conn = sqlite3.connect("health.db")
+
+            history_df = pd.read_sql_query(
+                "SELECT * FROM history",
+                conn
+            )
+
+            conn.close()
             
             if history_df.empty:
                 st.info(
