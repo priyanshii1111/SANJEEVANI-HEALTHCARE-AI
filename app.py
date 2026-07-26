@@ -1034,7 +1034,7 @@ elif st.session_state.page == "home":
                         header=not file_exists,
                         index=False
                     )
-                    
+
                     import time
 
                     with st.spinner("🧠 Sanjeevani AI is analyzing your health profile..."):
@@ -1595,10 +1595,10 @@ elif st.session_state.page == "weekly":
             st.markdown("---")
             st.markdown("## 🎯 Health Breakdown")
 
-            score_glucose = max(0, 100 - latest["glucose"]/2)
-            score_bp = max(0, 100 - latest["blood_pressure"]/2)
-            score_chol = max(0, 100 - latest["cholesterol"]/3)
-            score_bmi = max(0, 100 - latest["bmi"]*2)
+            score_glucose = max(10, 100 - latest["glucose"] / 2)
+            score_bp = max(10, 100 - latest["blood_pressure"] / 3)
+            score_chol = max(10, 100 - latest["cholesterol"] / 4)
+            score_bmi = max(10, 100 - latest["bmi"] * 1.5)
 
             breakdown = pd.DataFrame({
                 "Metric":["Glucose","Blood Pressure","Cholesterol","BMI"],
