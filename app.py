@@ -26,6 +26,7 @@ from vani_ai import ask_vani
 import re
 from report_vlm import analyze_report
 import io
+import sqlite3
 from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.enums import TA_CENTER
@@ -1025,7 +1026,16 @@ elif st.session_state.page == "home":
                         'risk_level': int(prediction),
                         'risk_percentage': round(float(probability * 100), 1)
                     }])
+                    conn = sqlite3.connect("health.db")
 
+                    new_record.to_sql(
+                        "history",
+                        conn,
+                        if_exists="append",
+                        index=False
+                    )
+
+                    conn.close()
                     file_exists = os.path.exists("history.csv")
 
                     new_record.to_csv(
