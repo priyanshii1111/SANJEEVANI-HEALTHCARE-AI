@@ -1027,10 +1027,14 @@ elif st.session_state.page == "home":
                     }])
 
 
+                    import os
+
+                    file_exists = os.path.exists("history.csv")
+
                     new_record.to_csv(
                         "history.csv",
-                        mode='a',
-                        header=False,
+                        mode="a",
+                        header=not file_exists,
                         index=False
                     )
 
@@ -1320,12 +1324,19 @@ elif st.session_state.page == "weekly":
         if not os.path.exists("history.csv"):
 
             st.warning(
-            "No assessment history found. Analyze a health profile first."
-        )
+                "No assessment history found. Analyze a health profile first."
+            )
+            st.stop()
 
         else:
 
             history_df = pd.read_csv("history.csv")
+            
+            if history_df.empty:
+                st.info(
+                    "No health assessments available yet. Complete your first analysis to generate your weekly dashboard."
+                    )
+                st.stop()
 
             history_df["timestamp"] = pd.to_datetime(
                 history_df["timestamp"]
