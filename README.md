@@ -8,7 +8,7 @@ SANJEEVANI predicts diabetes risk from user health parameters, generates intelli
 
 ## Live Demo
 
-🔗 **Streamlit App:** 
+🔗 **Streamlit App:** https://sanjeevani-healthcare-ai-fvhusawvwt8f4vifpzbkft.streamlit.app/
 
 ---
 
