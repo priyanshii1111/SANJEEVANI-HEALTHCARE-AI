@@ -102,21 +102,28 @@ No CSV files are required.
 
 ---
 
-## Project Structure
+## 📂 Project Structure
 
 ```text
-SANJEEVANI/
+SANJEEVANI-HEALTHCARE-AI/
 │
-├── app.py
-├── vani_ai.py
-├── report_vlm.py
-├── train_model.py
-├── health.db
-├── requirements.txt
-├── .gitignore
-└── README.md
+├── app.py                         # Main Streamlit application
+├── model/                         # Trained machine learning model files
+├── health.db                      # SQLite database for assessment history
+├── init_db.py                     # Creates and initializes the database
+├── report_vlm.py                  # AI-powered medical report analysis
+├── vani_ai.py                     # AI Health Assistant (Vani)
+├── requirements.txt               # Project dependencies
+├── README.md                      # Project documentation
+│
+├── logo2.jpg                      # Application logo
+├── Female avatar.json             # Lottie animation
+├── Looping Energy Orb.json        # UI animation
+├── result page success motion design.json
+│
+├── 2_model_training.ipynb         # Model training notebook
+└── test_healthcare_data.csv       # Sample healthcare dataset
 ```
-
 ---
 
 ## Installation
