@@ -2,7 +2,7 @@
 
 An AI-powered healthcare assistant built using **Machine Learning**, **Streamlit**, and **OpenRouter LLMs**.
 
-SANJEEVANI predicts diabetes risk from user health parameters, generates intelligent health insights, analyzes uploaded medical reports, and maintains assessment history using a SQLite database.
+SANJEEVANI is an intelligent healthcare application that evaluates vital health parameters, predicts health risk, provides AI-powered health insights, analyzes medical reports, and maintains patient assessment history using SQLite.
 
 ---
 
