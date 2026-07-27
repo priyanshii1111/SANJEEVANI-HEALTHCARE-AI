@@ -33,6 +33,35 @@ from reportlab.lib.enums import TA_CENTER
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle
 
+
+def init_database():
+    conn = sqlite3.connect("health.db")
+    cursor = conn.cursor()
+
+    cursor.execute("""
+        CREATE TABLE IF NOT EXISTS history (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            timestamp TEXT,
+            age INTEGER,
+            bmi REAL,
+            glucose REAL,
+            blood_pressure REAL,
+            skin_thickness REAL,
+            insulin REAL,
+            pregnancies INTEGER,
+            diabetes_pedigree REAL,
+            cholesterol REAL,
+            heart_rate REAL,
+            risk_probability REAL,
+            risk_category TEXT
+        )
+    """)
+
+    conn.commit()
+    conn.close()
+
+
+init_database()
 # ---------------- PAGE CONFIG ----------------
 
 st.set_page_config(
@@ -579,6 +608,9 @@ if "form_cholesterol" not in st.session_state:
 if "form_heart_rate" not in st.session_state:
     st.session_state.form_heart_rate = 72
 
+if "form_version" not in st.session_state:
+    st.session_state.form_version = 0
+
 if "show_report" not in st.session_state:
     st.session_state.show_report = False
 
@@ -821,7 +853,8 @@ elif st.session_state.page == "home":
                         "Age (years)",
                         min_value=18,
                         max_value=90,
-                        value=st.session_state.form_age
+                        value=st.session_state.form_age,
+                        key=f"form_age_{st.session_state.form_version}"
                     )
 
 
@@ -830,7 +863,8 @@ elif st.session_state.page == "home":
                         min_value=10.0,
                         max_value=60.0,
                         step=0.1,
-                        value=st.session_state.form_bmi
+                        value=st.session_state.form_bmi,
+                        key=f"form_bmi_{st.session_state.form_version}"
                     )
 
 
@@ -838,7 +872,8 @@ elif st.session_state.page == "home":
                         "Pregnancies",
                         min_value=0,
                         max_value=15,
-                        value=st.session_state.form_pregnancies
+                        value=st.session_state.form_pregnancies,
+                        key=f"form_pregnancies_{st.session_state.form_version}"
                     )
 
 
@@ -847,7 +882,8 @@ elif st.session_state.page == "home":
                         min_value=0.05,
                         max_value=2.5,
                         step=0.01,
-                        value=st.session_state.form_diabetes_pedigree
+                        value=st.session_state.form_diabetes_pedigree,
+                        key=f"form_diabetes_pedigree_{st.session_state.form_version}"
                     )
 
 
@@ -855,7 +891,8 @@ elif st.session_state.page == "home":
                         "Resting Heart Rate (bpm)",
                         min_value=40,
                         max_value=140,
-                        value=st.session_state.form_heart_rate
+                        value=st.session_state.form_heart_rate,
+                        key=f"form_heart_rate_{st.session_state.form_version}"
                     )
 
 
@@ -871,7 +908,8 @@ elif st.session_state.page == "home":
                         "Glucose Level (mg/dL)",
                         min_value=50.0,
                         max_value=300.0,
-                        value=st.session_state.form_glucose
+                        value=st.session_state.form_glucose,
+                        key=f"form_glucose_{st.session_state.form_version}"
                     )
 
 
@@ -879,7 +917,8 @@ elif st.session_state.page == "home":
                         "Blood Pressure (mmHg)",
                         min_value=50.0,
                         max_value=250.0,
-                        value=st.session_state.form_blood_pressure
+                        value=st.session_state.form_blood_pressure,
+                        key=f"form_blood_pressure_{st.session_state.form_version}"
                     )
 
 
@@ -887,7 +926,8 @@ elif st.session_state.page == "home":
                         "Cholesterol Level (mg/dL)",
                         min_value=100.0,
                         max_value=400.0,
-                        value=st.session_state.form_cholesterol
+                        value=st.session_state.form_cholesterol,
+                        key=f"form_cholesterol_{st.session_state.form_version}"
                     )
 
 
@@ -895,7 +935,8 @@ elif st.session_state.page == "home":
                         "Skin Thickness (mm)",
                         min_value=5.0,
                         max_value=60.0,
-                        value=st.session_state.form_skin_thickness
+                        value=st.session_state.form_skin_thickness,
+                        key=f"form_skin_thickness_{st.session_state.form_version}"
                     )
 
 
@@ -903,7 +944,8 @@ elif st.session_state.page == "home":
                         "Insulin Level (μU/mL)",
                         min_value=10.0,
                         max_value=500.0,
-                        value=st.session_state.form_insulin
+                        value=st.session_state.form_insulin,
+                        key=f"form_insulin_{st.session_state.form_version}"
                     )
 
 
@@ -926,7 +968,7 @@ elif st.session_state.page == "home":
                         )
 
                     if reset_button:
-                        # Reset all form values to defaults
+                        # Reset the underlying default values...
                         st.session_state.form_age = 45
                         st.session_state.form_bmi = 25.0
                         st.session_state.form_glucose = 120.0
@@ -937,6 +979,11 @@ elif st.session_state.page == "home":
                         st.session_state.form_diabetes_pedigree = 0.5
                         st.session_state.form_cholesterol = 195.0
                         st.session_state.form_heart_rate = 72
+
+                        # ...and bump the version so each widget gets a brand-new
+                        # key next run, forcing it to pick up the value= above
+                        # instead of keeping whatever was previously typed in
+                        st.session_state.form_version += 1
 
                         st.session_state.vani_chat = ""
                         st.session_state.show_vani_report = False
@@ -953,17 +1000,8 @@ elif st.session_state.page == "home":
                 # ================= PREDICTION =================
 
                 if submit_button:
-                    # Save form values to session state
-                    st.session_state.form_age = age
-                    st.session_state.form_bmi = bmi
-                    st.session_state.form_glucose = glucose
-                    st.session_state.form_blood_pressure = blood_pressure
-                    st.session_state.form_skin_thickness = skin_thickness
-                    st.session_state.form_insulin = insulin
-                    st.session_state.form_pregnancies = pregnancies
-                    st.session_state.form_diabetes_pedigree = diabetes_pedigree
-                    st.session_state.form_cholesterol = cholesterol
-                    st.session_state.form_heart_rate = heart_rate
+                    # Note: form_age, form_bmi, etc. are already kept in sync
+                    # automatically via each widget's key= binding above.
 
                     # A fresh analysis invalidates any previous Future Self report
                     st.session_state.vani_chat = ""
@@ -1303,348 +1341,341 @@ elif st.session_state.page == "weekly":
     """, unsafe_allow_html=True)
 
         st.markdown(f"""
-    <div class="dashboard-header">
+        <div class="dashboard-header">
 
-    <h1>
-    Health Analytics Center
-    </h1>
+        <h1>
+        Health Analytics Center
+        </h1>
 
-    <h3>
-    Welcome Back, {st.session_state.user_name}
-    </h3>
+        <h3>
+        Welcome Back, {st.session_state.user_name}
+        </h3>
 
-    <p>
-    Real-time health monitoring and risk intelligence dashboard
-    </p>
+        <p>
+        Real-time health monitoring and risk intelligence dashboard
+        </p>
 
-    </div>
-    """, unsafe_allow_html=True)
-        if not os.path.exists("history.csv"):
+        </div>
+        """, unsafe_allow_html=True)
 
+        conn = sqlite3.connect("health.db")
+
+        try:
+            history_df = pd.read_sql_query(
+                "SELECT * FROM history",
+                conn
+            )
+        except Exception:
+            history_df = pd.DataFrame()
+
+        conn.close()
+
+        if history_df.empty:
             st.warning(
                 "No assessment history found. Analyze a health profile first."
             )
             st.stop()
 
-        else:
+        history_df["timestamp"] = pd.to_datetime(
+            history_df["timestamp"]
+        )
+        
 
-            conn = sqlite3.connect("health.db")
+        history_df["date"] = (
+            history_df["timestamp"]
+            .dt.strftime("%d %b")
+        )
 
-            history_df = pd.read_sql_query(
-                "SELECT * FROM history",
-                conn
+        total_checks = len(history_df)
+
+        high_risk_count = len(
+            history_df[
+                history_df["risk_level"] == 1
+            ]
+        )
+
+        healthy_count = len(
+            history_df[
+                history_df["risk_level"] == 0
+            ]
+        )
+
+        avg_risk_prob = (
+            history_df["risk_percentage"]
+            .mean()
+        )
+
+        latest = history_df.iloc[-1]
+
+        latest_risk = latest["risk_percentage"]
+        health_score = 100 - latest_risk
+
+        st.markdown("## 📊 Weekly Performance Summary")
+
+        c1, c2, c3, c4 = st.columns(4)
+
+        with c1:
+            st.metric(
+                "🩺 Assessments",
+                total_checks
             )
 
-            conn.close()
-            
-            if history_df.empty:
-                st.info(
-                    "No health assessments available yet. Complete your first analysis to generate your weekly dashboard."
-                    )
-                st.stop()
-
-            history_df["timestamp"] = pd.to_datetime(
-                history_df["timestamp"]
+        with c2:
+            st.metric(
+                "✅ Healthy Cases",
+                healthy_count
             )
 
-            history_df["date"] = (
-                history_df["timestamp"]
-                .dt.strftime("%d %b")
+        with c3:
+            st.metric(
+                "⚠️ At Risk",
+                high_risk_count
             )
 
-            total_checks = len(history_df)
-
-            high_risk_count = len(
-                history_df[
-                    history_df["risk_level"] == 1
-                ]
+        with c4:
+            st.metric(
+                "❤️ Health Score",
+                f"{health_score:.1f}/100"
             )
 
-            healthy_count = len(
-                history_df[
-                    history_df["risk_level"] == 0
-                ]
-            )
+        st.markdown("<br>", unsafe_allow_html=True)
+        gauge_col1, gauge_col2 = st.columns([2,1])
 
-            avg_risk_prob = (
-                history_df["risk_percentage"]
-                .mean()
-            )
+        with gauge_col1:
 
-            latest = history_df.iloc[-1]
+            gauge = go.Figure(
+                go.Indicator(
+                    mode="gauge+number",
 
-            latest_risk = latest["risk_percentage"]
-            health_score = 100 - latest_risk
+                    value=health_score,
 
-            st.markdown("## 📊 Weekly Performance Summary")
+                    title={
+                        "text":"Overall Health Score"
+                    },
 
-            c1, c2, c3, c4 = st.columns(4)
-
-            with c1:
-                st.metric(
-                    "🩺 Assessments",
-                    total_checks
-                )
-
-            with c2:
-                st.metric(
-                    "✅ Healthy Cases",
-                    healthy_count
-                )
-
-            with c3:
-                st.metric(
-                    "⚠️ At Risk",
-                    high_risk_count
-                )
-
-            with c4:
-                st.metric(
-                    "❤️ Health Score",
-                    f"{health_score:.1f}/100"
-                )
-
-            st.markdown("<br>", unsafe_allow_html=True)
-            gauge_col1, gauge_col2 = st.columns([2,1])
-            latest = history_df.iloc[-1]
-
-            latest_risk = latest["risk_percentage"]
-            health_score = 100 - latest_risk
-            with gauge_col1:
-
-                gauge = go.Figure(
-                    go.Indicator(
-                        mode="gauge+number",
-
-                        value=health_score,
-
-                        title={
-                            "text":"Overall Health Score"
+                    gauge={
+                        "axis":{
+                            "range":[0,100]
                         },
 
-                        gauge={
-                            "axis":{
-                                "range":[0,100]
+                        "bar":{
+                            "color":"green"
+                        },
+
+                        "steps":[
+                            {
+                                "range":[0,40],
+                                "color":"#ef4444"
                             },
 
-                            "bar":{
-                                "color":"green"
+                            {
+                                "range":[40,70],
+                                "color":"#f59e0b"
                             },
 
-                            "steps":[
-                                {
-                                    "range":[0,40],
-                                    "color":"#ef4444"
-                                },
-
-                                {
-                                    "range":[40,70],
-                                    "color":"#f59e0b"
-                                },
-
-                                {
-                                    "range":[70,100],
-                                    "color":"#22c55e"
-                                }
-                            ]
-                        }
-                    )
+                            {
+                                "range":[70,100],
+                                "color":"#22c55e"
+                            }
+                        ]
+                    }
                 )
-
-                gauge.update_layout(
-                    height=350
-                )
-
-                st.plotly_chart(
-                    gauge,
-                    use_container_width=True
-                )
-            with gauge_col2:
-
-                st.markdown("### 🧠 AI Insights")
-
-                if latest_risk < 20:
-
-                    st.success(
-                        "Excellent overall health trend detected this week."
-                    )
-
-                elif latest_risk < 60:
-
-                    st.warning(
-                        "Moderate health risk trend detected."
-                    )
-
-                else:
-
-                    st.error(
-                        "High health risk trend detected."
-                    )
-
-                st.metric(
-                    "Current Risk",
-                    f"{latest_risk:.1f}%"
-                    )
-
-                st.metric(
-                    "Healthy Ratio",
-                    f"{healthy_count}/{total_checks}"
-                )
-
-            st.markdown("---")
-
-            pie_col1, pie_col2 = st.columns([2,1])
-
-            with pie_col1:
-
-                pie_fig = px.pie(
-                    values=[
-                        healthy_count,
-                        high_risk_count
-                    ],
-
-                    names=[
-                        "Healthy",
-                        "At Risk"
-                    ],
-
-                    hole=0.65
-                )
-
-                pie_fig.update_layout(
-                    title="All Recorded Assessments",
-                    height=450
-                )
-
-                st.plotly_chart(
-                    pie_fig,
-                    use_container_width=True
-                )
-
-                st.caption(
-                "Historical distribution of all analyzed patients recorded in the Sanjeevani system."
-                )
-            with pie_col2:
-
-                st.markdown("### 🏆 Weekly Rating")
-
-                if health_score >= 90:
-
-                    badge = "🥇 Elite Health"
-
-                elif health_score >= 75:
-
-                    badge = "🥈 Excellent"
-
-                elif health_score >= 60:
-
-                    badge = "🥉 Good"
-
-                elif health_score >= 40:
-
-                    badge = "⚠️ Needs Attention"
-
-                else:
-
-                    badge = "🚨 Critical"
-
-                st.markdown(f"""
-                <div style="
-                background:white;
-                padding:30px;
-                border-radius:20px;
-                text-align:center;
-                box-shadow:0px 6px 20px rgba(0,0,0,0.1);
-                ">
-
-                <h2>{badge}</h2>
-
-                <h1 style="
-                color:#166534;
-                ">
-                {health_score:.1f}
-                </h1>
-
-                <p>
-                Weekly Health +
-                </p>
-
-                </div>
-                """, unsafe_allow_html=True)
-            
-            st.markdown("---")
-            st.markdown("## 🔬 Vital Status Dashboard")
-
-            v1, v2, v3, v4 = st.columns(4)
-
-            with v1:
-                if latest["glucose"] <= 140:
-                    st.success("🟢 Glucose\n\nNormal")
-                else:
-                    st.error("🔴 Glucose\n\nHigh")
-
-            with v2:
-                if latest["blood_pressure"] <= 130:
-                    st.success("🟢 Blood Pressure\n\nNormal")
-                else:
-                    st.error("🔴 Blood Pressure\n\nHigh")
-
-            with v3:
-                if latest["cholesterol"] <= 200:
-                    st.success("🟢 Cholesterol\n\nNormal")
-                else:
-                    st.error("🔴 Cholesterol\n\nHigh")
-
-            with v4:
-                if latest["bmi"] <= 25:
-                    st.success("🟢 BMI\n\nHealthy")
-                else:
-                    st.warning("🟡 BMI\n\nElevated")
-
-            st.markdown("---")
-            st.markdown("## 🎯 Health Breakdown")
-
-            score_glucose = max(10, 100 - latest["glucose"] / 2)
-            score_bp = max(10, 100 - latest["blood_pressure"] / 3)
-            score_chol = max(10, 100 - latest["cholesterol"] / 4)
-            score_bmi = max(10, 100 - latest["bmi"] * 1.5)
-
-            breakdown = pd.DataFrame({
-                "Metric":["Glucose","Blood Pressure","Cholesterol","BMI"],
-                "Score":[score_glucose, score_bp, score_chol, score_bmi]
-            })
-
-            fig = px.bar(
-                breakdown,
-                x="Metric",
-                y="Score",
-                title="Health Component Scores"
             )
 
-            st.plotly_chart(fig, use_container_width=True)
+            gauge.update_layout(
+                height=350
+            )
 
-            st.markdown("---")
-            st.markdown("## 🧠 Sanjeevani Summary")
+            st.plotly_chart(
+                gauge,
+                use_container_width=True
+            )
+        with gauge_col2:
 
-            summary = []
+            st.markdown("### 🧠 AI Insights")
 
-            if latest["glucose"] > 140:
-                summary.append("Elevated glucose detected.")
+            if latest_risk < 20:
 
-            if latest["blood_pressure"] > 130:
-                summary.append("Blood pressure requires monitoring.")
+                st.success(
+                    "Excellent overall health trend detected this week."
+                )
 
-            if latest["cholesterol"] > 200:
-                summary.append("Cholesterol level is above ideal range.")
+            elif latest_risk < 60:
 
-            if latest["bmi"] > 25:
-                summary.append("Weight management may improve health outcomes.")
+                st.warning(
+                    "Moderate health risk trend detected."
+                )
 
-            if len(summary) == 0:
-                summary.append("All major health indicators are within healthy ranges.")
+            else:
 
-            for item in summary:
-                st.write("•", item)
+                st.error(
+                    "High health risk trend detected."
+                )
+
+            st.metric(
+                "Current Risk",
+                f"{latest_risk:.1f}%"
+                )
+
+            st.metric(
+                "Healthy Ratio",
+                f"{healthy_count}/{total_checks}"
+            )
+
+        st.markdown("---")
+
+        pie_col1, pie_col2 = st.columns([2,1])
+
+        with pie_col1:
+
+            pie_fig = px.pie(
+                values=[
+                    healthy_count,
+                    high_risk_count
+                ],
+
+                names=[
+                    "Healthy",
+                    "At Risk"
+                ],
+
+                hole=0.65
+            )
+
+            pie_fig.update_layout(
+                title="All Recorded Assessments",
+                height=450
+            )
+
+            st.plotly_chart(
+                pie_fig,
+                use_container_width=True
+            )
+
+            st.caption(
+            "Historical distribution of all analyzed patients recorded in the Sanjeevani system."
+            )
+        with pie_col2:
+
+            st.markdown("### 🏆 Weekly Rating")
+
+            if health_score >= 90:
+
+                badge = "🥇 Elite Health"
+
+            elif health_score >= 75:
+
+                badge = "🥈 Excellent"
+
+            elif health_score >= 60:
+
+                badge = "🥉 Good"
+
+            elif health_score >= 40:
+
+                badge = "⚠️ Needs Attention"
+
+            else:
+
+                badge = "🚨 Critical"
+
+            st.markdown(f"""
+            <div style="
+            background:white;
+            padding:30px;
+            border-radius:20px;
+            text-align:center;
+            box-shadow:0px 6px 20px rgba(0,0,0,0.1);
+            ">
+
+            <h2>{badge}</h2>
+
+            <h1 style="
+            color:#166534;
+            ">
+            {health_score:.1f}
+            </h1>
+
+            <p>
+            Weekly Health +
+            </p>
+
+            </div>
+            """, unsafe_allow_html=True)
+        
+        st.markdown("---")
+        st.markdown("## 🔬 Vital Status Dashboard")
+
+        v1, v2, v3, v4 = st.columns(4)
+
+        with v1:
+            if latest["glucose"] <= 140:
+                st.success("🟢 Glucose\n\nNormal")
+            else:
+                st.error("🔴 Glucose\n\nHigh")
+
+        with v2:
+            if latest["blood_pressure"] <= 130:
+                st.success("🟢 Blood Pressure\n\nNormal")
+            else:
+                st.error("🔴 Blood Pressure\n\nHigh")
+
+        with v3:
+            if latest["cholesterol"] <= 200:
+                st.success("🟢 Cholesterol\n\nNormal")
+            else:
+                st.error("🔴 Cholesterol\n\nHigh")
+
+        with v4:
+            if latest["bmi"] <= 25:
+                st.success("🟢 BMI\n\nHealthy")
+            else:
+                st.warning("🟡 BMI\n\nElevated")
+
+        st.markdown("---")
+        st.markdown("## 🎯 Health Breakdown")
+
+        score_glucose = max(10, 100 - latest["glucose"] / 2)
+        score_bp = max(10, 100 - latest["blood_pressure"] / 3)
+        score_chol = max(10, 100 - latest["cholesterol"] / 4)
+        score_bmi = max(10, 100 - latest["bmi"] * 1.5)
+
+        breakdown = pd.DataFrame({
+            "Metric":["Glucose","Blood Pressure","Cholesterol","BMI"],
+            "Score":[score_glucose, score_bp, score_chol, score_bmi]
+        })
+
+        fig = px.bar(
+            breakdown,
+            x="Metric",
+            y="Score",
+            title="Health Component Scores"
+        )
+
+        st.plotly_chart(fig, use_container_width=True)
+
+        st.markdown("---")
+        st.markdown("## 🧠 Sanjeevani Summary")
+
+        summary = []
+
+        if latest["glucose"] > 140:
+            summary.append("Elevated glucose detected.")
+
+        if latest["blood_pressure"] > 130:
+            summary.append("Blood pressure requires monitoring.")
+
+        if latest["cholesterol"] > 200:
+            summary.append("Cholesterol level is above ideal range.")
+
+        if latest["bmi"] > 25:
+            summary.append("Weight management may improve health outcomes.")
+
+        if len(summary) == 0:
+            summary.append("All major health indicators are within healthy ranges.")
+
+        for item in summary:
+            st.write("•", item)
 
 # ==========================================
 # AI FUTURE SELF PAGE
