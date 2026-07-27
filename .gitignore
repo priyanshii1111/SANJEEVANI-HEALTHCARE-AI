@@ -2,3 +2,5 @@ myvenv/
 __pycache__/
 .env
 *.pyc
+health.db
+test_openrouter.py
