@@ -1,0 +1,178 @@
+# SANJEEVANI - Your AI Health Companion
+
+An AI-powered healthcare assistant built using **Machine Learning**, **Streamlit**, and **OpenRouter LLMs**.
+
+SANJEEVANI predicts diabetes risk from user health parameters, generates intelligent health insights, analyzes uploaded medical reports, and maintains assessment history using a SQLite database.
+
+---
+
+## Live Demo
+
+🔗 **Streamlit App:** 
+
+---
+
+## Features
+
+### AI Health Risk Prediction
+
+- Predicts diabetes risk using a trained Machine Learning model
+- Calculates Risk Score and Health Score
+- Classifies users into:
+  - Excellent Health
+  - Healthy
+  - Moderate Risk
+  - High Risk
+  - Critical Risk
+
+---
+
+### AI Health Insights
+
+- Personalized health observations
+- Risk interpretation
+- Dynamic health recommendations
+
+---
+
+### VANI AI Assistant
+
+Powered using OpenRouter LLM.
+
+Users can:
+
+- Ask questions about their health report
+- Understand medical values
+- Receive AI-generated explanations
+
+---
+
+### Medical Report Analyzer
+
+Upload medical reports and receive AI-powered analysis.
+
+---
+
+### Weekly Analytics Dashboard
+
+Visual dashboard including:
+
+- Total Assessments
+- Healthy vs At-Risk Cases
+- Health Score Gauge
+- Pie Charts
+- Health Breakdown
+- Vital Status Dashboard
+- Weekly Summary
+
+---
+
+### PDF Report Generation
+
+Generate and download a complete health report including:
+
+- Patient Details
+- Risk Assessment
+- AI Insights
+- VANI Responses
+- Medical Report Analysis
+
+---
+
+### SQLite Database
+
+Assessment history is stored using SQLite.
+
+No CSV files are required.
+
+---
+
+## Tech Stack
+
+- Python
+- Streamlit
+- Scikit-learn
+- Pandas
+- NumPy
+- Plotly
+- ReportLab
+- SQLite
+- OpenRouter API
+- OpenAI SDK
+
+---
+
+## Project Structure
+
+```text
+SANJEEVANI/
+│
+├── app.py
+├── vani_ai.py
+├── report_vlm.py
+├── train_model.py
+├── health.db
+├── requirements.txt
+├── .gitignore
+└── README.md
+```
+
+---
+
+## Installation
+
+Clone the repository
+
+```bash
+git clone <your-repository-link>
+```
+
+Install dependencies
+
+```bash
+pip install -r requirements.txt
+```
+
+Create a `.env` file
+
+```text
+OPENROUTER_API_KEY=your_api_key
+```
+
+Run
+
+```bash
+streamlit run app.py
+```
+
+---
+
+## Environment Variables
+
+Required:
+
+```text
+OPENROUTER_API_KEY
+```
+
+On Streamlit Cloud, add this key inside **Secrets**.
+
+---
+
+## Future Improvements
+
+- Multi-user login
+- Doctor dashboard
+- Appointment booking
+- Mobile responsive UI
+- Health trend forecasting
+
+---
+
+## Author
+
+**Priyanshi**
+
+BCA Student | Machine Learning Enthusiast
+
+Built as an internship project.
